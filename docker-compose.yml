@@ -1,0 +1,34 @@
+version: "3"
+services:
+  server_api:
+    build: ./server_api
+    ports:
+      - "9000:9000"
+    command: go run api_avito
+    depends_on: 
+      - db
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD=avito
+    volumes:
+    #Have no idea why this is not working
+      - ./postgres/data:/var/lib/postgresql
+      - ./postgres/log:/var/log/postgresql
+  nginx:
+    image: nginx:latest
+    ports:
+      - "9001:80"
+      - "443:443"
+    volumes:
+      - ./hosts:/etc/nginx/conf.d
+      - ./www:/var/www
+      - ./logs:/var/log/nginx
+    links: 
+      - php
+  php:
+    image: php:fpm
+    working_dir: /var/www
+    command: php-fpm
+    volumes:
+      - ./www:/var/www
